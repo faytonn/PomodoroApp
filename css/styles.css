@@ -1,0 +1,187 @@
+
+:root {
+    --clr-primary: #8B0000;
+    --clr-bg: #ffffff;
+    --clr-surface: #f5f5f5;
+    --clr-text: #333333;
+    --clr-accent: #d3d3d3;
+    --transition: 0.2s ease;
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: var(--clr-bg);
+    color: var(--clr-text);
+    line-height: 1.6;
+  }
+  
+  header {
+    background: var(--clr-primary);
+    color: var(--clr-bg);
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  header h1 {
+    margin: 0;
+    font-size: 1.75rem;
+  }
+  
+  .main-container {
+    display: flex;
+    gap: 2rem;
+    padding: 2rem;
+    max-width: 900px;
+    margin: 2rem auto;
+    background: var(--clr-surface);
+    border-radius: 8px;
+  }
+  
+  .timer-container,
+  #todo-section {
+    flex: 1;
+    background: var(--clr-bg);
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border: 1px solid var(--clr-accent);
+  }
+  
+  .timer-settings {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+  .timer-settings label {
+    font-size: 0.9rem;
+  }
+  .timer-settings input {
+    width: 4rem;
+    padding: 0.2rem 0.4rem;
+    margin-left: 0.3rem;
+    border: 1px solid var(--clr-accent);
+    border-radius: 4px;
+  }
+  #save-settings {
+    padding: 0.4rem 0.8rem;
+    border: 2px solid var(--clr-primary);
+    background: var(--clr-bg);
+    color: var(--clr-primary);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+  }
+  #save-settings:hover {
+    background: var(--clr-primary);
+    color: var(--clr-bg);
+  }
+  
+  .mode-display {
+    font-size: 1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 0.3rem 0.6rem;
+    display: inline-block;
+    border-radius: 4px;
+    background: var(--clr-accent);
+    color: var(--clr-primary);
+    margin-bottom: 1rem;
+  }
+  .mode-display.work  { background: #FFE5E5; color: var(--clr-primary); }
+  .mode-display.short { background: #FFF0F0; color: var(--clr-primary); }
+  .mode-display.long  { background: #FDEADA; color: var(--clr-primary); }
+  
+  #timer {
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .controls {
+    margin-bottom: 1rem;
+  }
+  .controls button {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    margin: 0 0.3rem;
+    border: 2px solid var(--clr-primary);
+    border-radius: 4px;
+    cursor: pointer;
+    background: var(--clr-bg);
+    color: var(--clr-primary);
+    transition: background var(--transition), color var(--transition);
+  }
+  .controls button:hover,
+  .controls button:focus {
+    background: var(--clr-primary);
+    color: var(--clr-bg);
+  }
+  .controls button:active {
+    background: #FFE5E5;
+  }
+  
+  /* To‑Do Input */
+  .todo-input {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .todo-input input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid var(--clr-accent);
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+  .todo-input button {
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--clr-primary);
+    background: var(--clr-bg);
+    color: var(--clr-primary);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+  }
+  .todo-input button:hover {
+    background: var(--clr-primary);
+    color: var(--clr-bg);
+  }
+  
+  /* Task List */
+  #task-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  #task-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--clr-accent);
+  }
+  #task-list li:last-child {
+    border-bottom: none;
+  }
+  #task-list li.completed span {
+    text-decoration: line-through;
+    color: var(--clr-accent);
+  }
+  #task-list button.delete-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--clr-primary);
+    cursor: pointer;
+    transition: color var(--transition);
+  }
+  #task-list button.delete-btn:hover {
+    color: #555;
+  }
+  

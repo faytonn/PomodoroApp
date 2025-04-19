@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pomodoro App</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header>
+    <h1>🍅 Pomodoro Study</h1>
+  </header>
+
+  <main class="main-container">
+    <section class="timer-container">
+        <div class="timer-settings">
+
+
+          <label>
+            Work (min):
+            <input type="number" id="work-input" min="1" value="25" />
+          </label>
+          <label>
+            Short Break (min):
+            <input type="number" id="short-break-input" min="1" value="5" />
+          </label>
+          <label>
+            Long Break (min):
+            <input type="number" id="long-break-input" min="1" value="15" />
+          </label>
+          <button id="save-settings">Save</button>
+        </div>
+      
+        <div id="mode-display" class="mode-display">Work</div>
+
+
+        <div id="timer">
+          <span id="minutes">25</span>:<span id="seconds">00</span>
+        </div>
+        <div class="controls">
+          <button id="start">Start</button>
+          <button id="pause">Pause</button>
+          <button id="reset">Reset</button>
+        </div>
+      </section>
+
+    <section id="todo-section">
+        <h2>To‑Do</h2>
+        <div class="todo-input">
+          <input type="text" id="new-task" placeholder="Add a new task…" />
+          <button id="add-task">Add</button>
+        </div>
+        <ul id="task-list"></ul>
+      </section>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
