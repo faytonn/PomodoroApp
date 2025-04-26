@@ -7,52 +7,103 @@
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
-  <header>
-    <h1>🍅 Pomodoro Study</h1>
-  </header>
+  <div id="auth-container">
+    <section id="login-section" class="auth-box">
+      <h2>Login</h2>
+      <input type="text" id="login-username" placeholder="Username" />
+      <input type="password" id="login-password" placeholder="Password" />
+      <button id="login-btn">Log In</button>
+      <p>No account? <a href="#" id="show-register">Register</a></p>
+      <div id="login-error" class="error"></div>
+    </section>
 
-  <main class="main-container">
-    <section class="timer-container">
-        <div class="timer-settings">
+    <section id="register-section" class="auth-box hidden">
+      <h2>Register</h2>
+      <input type="text" id="reg-username" placeholder="Username" />
+      <input type="password" id="reg-password" placeholder="Password" />
+      <input type="password" id="reg-confirm" placeholder="Confirm Password" />
+      <button id="register-btn">Sign Up</button>
+      <p>Have an account? <a href="#" id="show-login">Login</a></p>
+      <div id="reg-error" class="error"></div>
+    </section>
+  </div>
 
-
-          <label>
-            Work (min):
-            <input type="number" id="work-input" min="1" value="25" />
-          </label>
-          <label>
-            Short Break (min):
-            <input type="number" id="short-break-input" min="1" value="5" />
-          </label>
-          <label>
-            Long Break (min):
-            <input type="number" id="long-break-input" min="1" value="15" />
-          </label>
-          <button id="save-settings">Save</button>
+  <div id="app-container" class="hidden">
+    <header>
+      <nav>
+        <div class="nav-left">
+          <h1>Pomodoro App</h1>
+          <div class="nav-tabs">
+            <button class="tab-btn" data-tab="pomodoro">Pomodoro</button>
+            <button class="tab-btn" data-tab="todo">Tasks</button>
+            <button class="tab-btn" data-tab="stats">Stats</button>
+            <button class="tab-btn" data-tab="focus">Focus Mode</button>
+            <button class="tab-btn" data-tab="about">About</button>
+          </div>
         </div>
-      
-        <div id="mode-display" class="mode-display">Work</div>
-
-
-        <div id="timer">
-          <span id="minutes">25</span>:<span id="seconds">00</span>
+        <div class="nav-right">
+          <div class="user-panel">
+            <button class="user-button">
+              <span class="user-avatar">U</span>
+              <span id="username-display"></span>
+            </button>
+            <div class="user-dropdown">
+              <div class="dropdown-item" data-action="profile">Profile</div>
+              <div class="dropdown-item" data-action="settings">Settings</div>
+              <div class="dropdown-item" data-action="theme">
+                <span>Theme</span>
+                <button class="theme-toggle">
+                  <span class="theme-icon">🌙</span>
+                </button>
+              </div>
+              <div class="dropdown-divider"></div>
+              <div class="dropdown-item" data-action="logout">Logout</div>
+            </div>
+          </div>
         </div>
-        <div class="controls">
-          <button id="start">Start</button>
-          <button id="pause">Pause</button>
-          <button id="reset">Reset</button>
-        </div>
-      </section>
+      </nav>
+    </header>
+    <main class="tab-content">
+      <div id="root">
 
-    <section id="todo-section">
-        <h2>To‑Do</h2>
-        <div class="todo-input">
-          <input type="text" id="new-task" placeholder="Add a new task…" />
-          <button id="add-task">Add</button>
-        </div>
-        <ul id="task-list"></ul>
-      </section>
 
-  <script src="js/script.js"></script>
+
+        <div class="timer-container">
+          <div class="progress-ring">
+            <svg class="progress-ring__circle" width="300" height="300">
+              <circle class="progress-ring__circle-bg" cx="150" cy="150" r="140" />
+              <circle class="progress-ring__circle-progress" cx="150" cy="150" r="140" />
+            </svg>
+            <div class="timer-display">
+              <h2 id="mode-display">Work</h2>
+              <div class="time">
+                <span id="minutes">25</span>:<span id="seconds">00</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="timer-controls">
+            <button id="start">Start</button>
+            <button id="pause">Pause</button>
+            <button id="reset">Reset</button>
+          </div>
+
+          <div class="settings-panel">
+            <h3>Timer Settings</h3>
+            <div>
+              <label>Work: <input type="number" id="work-input" min="1" max="60" value="25" /> min</label>
+              <label>Short Break: <input type="number" id="short-break-input" min="1" max="60" value="5" /> min</label>
+              <label>Long Break: <input type="number" id="long-break-input" min="1" max="60" value="15" /> min</label>
+              <button id="save-settings">Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="js/router.js"></script>
+  <script type="module" src="js/theme.js"></script>
+  <script type="module" src="js/script.js"></script>
 </body>
 </html>
