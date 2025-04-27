@@ -10,7 +10,7 @@
   <div id="auth-container">
     <section id="login-section" class="auth-box">
       <h2>Login</h2>
-      <input type="text" id="login-username" placeholder="Username" />
+      <input type="text" id="login-username" placeholder="Username or Email" />
       <input type="password" id="login-password" placeholder="Password" />
       <button id="login-btn">Log In</button>
       <p>No account? <a href="#" id="show-register">Register</a></p>
@@ -20,6 +20,7 @@
     <section id="register-section" class="auth-box hidden">
       <h2>Register</h2>
       <input type="text" id="reg-username" placeholder="Username" />
+      <input type="email" id="reg-email" placeholder="Email" />
       <input type="password" id="reg-password" placeholder="Password" />
       <input type="password" id="reg-confirm" placeholder="Confirm Password" />
       <button id="register-btn">Sign Up</button>
@@ -104,6 +105,7 @@
 
   <script type="module" src="js/router.js"></script>
   <script type="module" src="js/theme.js"></script>
+  <script type="module" src="js/api.js"></script>
   <script type="module" src="js/script.js"></script>
 </body>
 </html>
