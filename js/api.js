@@ -13,47 +13,81 @@ async function apiCall(endpoint, method = 'GET', data = null) {
     }
 
     const token = localStorage.getItem('token');
+    console.log('Current token from localStorage:', token);
+    
     if (token) {
         options.headers['Authorization'] = `Bearer ${token}`;
+        console.log('Added Authorization header:', options.headers['Authorization']);
+    } else {
+        console.warn('No token found in localStorage');
     }
 
     try {
+        console.log(`Making ${method} request to ${endpoint} with data:`, data);
         const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
         
         if (!response.ok) {
-            let errorText = await response.text();
-            let error;
-            try {
-                error = JSON.parse(errorText);
-            } catch {
-                error = { message: errorText };
-            }
-            throw new Error(error.message || 'API request failed');
+            const errorText = await response.text();
+            console.error('API Error:', {
+                status: response.status,
+                statusText: response.statusText,
+                error: errorText
+            });
+            throw new Error(errorText || 'API request failed');
         }
 
-        // Only try to parse JSON if there is content
         const contentType = response.headers.get('content-type');
-        if (response.status === 204 || !contentType || !contentType.includes('application/json')) {
-            return;
+        if (contentType && contentType.includes('application/json')) {
+            const jsonResponse = await response.json();
+            console.log('API Response:', jsonResponse);
+            return jsonResponse;
         }
-        const text = await response.text();
-        if (!text) return;
-        return JSON.parse(text);
+        return null;
     } catch (error) {
-        console.error('API Error:', error);
+        console.error('API Call Error:', error);
         throw error;
     }
 }
 
 export const auth = {
     async register(username, email, password) {
-        return await apiCall('/auth/register', 'POST', { username, email, password });
+        return await apiCall('/auth/register', 'POST', { 
+            username, 
+            email, 
+            password,
+            confirmPassword: password
+        });
     },
 
     async login(loginId, password) {
+        console.log('Attempting login with:', { loginId });
         const response = await apiCall('/auth/login', 'POST', { loginId, password });
+        console.log('Login response:', response);
+        
+        if (!response || !response.token) {
+            console.error('Login response missing token:', response);
+            throw new Error('Invalid login response');
+        }
+        
+        // Log the exact structure of the response
+        console.log('Response structure:', {
+            token: response.token,
+            username: response.username,
+            fullResponse: response
+        });
+        
+        // Store the token and username
         localStorage.setItem('token', response.token);
         localStorage.setItem('currentUser', response.username);
+        
+        // Verify the stored values
+        const storedToken = localStorage.getItem('token');
+        const storedUser = localStorage.getItem('currentUser');
+        console.log('Stored values:', {
+            token: storedToken,
+            currentUser: storedUser
+        });
+        
         return response;
     },
 
@@ -128,5 +162,15 @@ export const stats = {
 
     async getWeeklyStats() {
         return await apiCall('/UserStats/weekly');
+    }
+};
+
+export const settings = {
+    async getUserSettings() {
+        return await apiCall('/UserSettings');
+    },
+
+    async updateUserSettings(settings) {
+        return await apiCall('/UserSettings', 'PUT', settings);
     }
 }; 
