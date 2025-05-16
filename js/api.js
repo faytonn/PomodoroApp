@@ -69,16 +69,19 @@ export const auth = {
             throw new Error('Invalid login response');
         }
         
+        // Use loginId as username if username is not in response
+        const username = response.username || loginId;
+        
         // Log the exact structure of the response
         console.log('Response structure:', {
             token: response.token,
-            username: response.username,
+            username: username,
             fullResponse: response
         });
         
         // Store the token and username
         localStorage.setItem('token', response.token);
-        localStorage.setItem('currentUser', response.username);
+        localStorage.setItem('currentUser', username);
         
         // Verify the stored values
         const storedToken = localStorage.getItem('token');
@@ -88,7 +91,7 @@ export const auth = {
             currentUser: storedUser
         });
         
-        return response;
+        return { ...response, username };
     },
 
     async logout() {

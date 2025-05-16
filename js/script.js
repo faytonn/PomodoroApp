@@ -31,18 +31,21 @@ const authC = qs('auth-container'),
 
 document.addEventListener('DOMContentLoaded', () => {
   const currentUser = localStorage.getItem('currentUser');
-    if (currentUser) {
+  if (currentUser) {
     authC.classList.add('hidden');
     appC.classList.remove('hidden');
     qs('username-display').textContent = currentUser;
     
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    
-    const themeIcon = document.querySelector('.theme-icon');
-    if (themeIcon) {
-      themeIcon.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
-    }
+    // Load theme from user settings first, then fallback to localStorage
+    loadSettings().then(settings => {
+      const theme = settings?.theme || localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+      
+      const themeIcon = document.querySelector('.theme-icon');
+      if (themeIcon) {
+        themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+      }
+    });
     
     import('./theme.js').then(module => {
       module.initTheme();
@@ -1102,14 +1105,36 @@ async function updateEmail() {
 async function loadProfileStats() {
     try {
         const stats = await api.stats.getUserStats();
+        console.log('Received stats from API:', stats);
         
-        // Update the stats display
-        qs('total-pomodoros').textContent = stats.totalPomodoros || 0;
-        qs('total-focus-time').textContent = formatTime(stats.totalFocusTime || 0);
-        qs('tasks-completed').textContent = stats.tasksCompleted || 0;
-        qs('current-streak').textContent = stats.currentStreak || 0;
+        // Ensure we have default values if stats is null or undefined
+        const safeStats = stats || {
+            totalPomodoros: 0,
+            totalFocusTime: 0,
+            tasksCompleted: 0,
+            currentStreak: 0
+        };
+        
+        // Update the stats display with safe values
+        const totalPomodoros = document.getElementById('total-pomodoros');
+        const totalFocusTime = document.getElementById('total-focus-time');
+        const tasksCompleted = document.getElementById('tasks-completed');
+        const currentStreak = document.getElementById('current-streak');
+        
+        if (totalPomodoros) totalPomodoros.textContent = safeStats.totalPomodoros || 0;
+        if (totalFocusTime) totalFocusTime.textContent = formatTime(safeStats.totalFocusTime || 0);
+        if (tasksCompleted) tasksCompleted.textContent = safeStats.tasksCompleted || 0;
+        if (currentStreak) currentStreak.textContent = safeStats.currentStreak || 0;
     } catch (error) {
         console.error('Failed to load profile stats:', error);
+        // Set default values on error
+        const elements = ['total-pomodoros', 'total-focus-time', 'tasks-completed', 'current-streak'];
+        elements.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = id === 'total-focus-time' ? '0h 0m' : '0';
+            }
+        });
     }
 }
 
@@ -1165,11 +1190,20 @@ function initHeader() {
                     initSettings();
                     break;
                 case 'theme':
-                    const themeIcon = item.querySelector('.theme-icon');
                     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-                    document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
-                    themeIcon.textContent = isDark ? '🌙' : '☀️';
-                    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+                    const newTheme = isDark ? 'light' : 'dark';
+                    document.documentElement.setAttribute('data-theme', newTheme);
+                    
+                    // Update all theme icons
+                    const themeIcons = document.querySelectorAll('.theme-icon');
+                    themeIcons.forEach(icon => {
+                        if (icon) {
+                            icon.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+                        }
+                    });
+                    
+                    // Save theme preference to settings
+                    saveSettings();
                     break;
                 case 'logout':
                     auth.logout();
@@ -1207,8 +1241,7 @@ function initHeader() {
     });
 
     const initialTab = document.querySelector('.tab-btn[data-tab="pomodoro"]');
-    if (initialTab) 
-    {
+    if (initialTab) {
         initialTab.classList.add('active');
     }
 }
@@ -1326,15 +1359,59 @@ async function updatePassword() {
   }
 }
 
+function applyAccentColor(color) {
+  // Update CSS variables
+  document.documentElement.style.setProperty('--primary-color', color);
+  document.documentElement.style.setProperty('--hover-color', color + '20');
+  document.documentElement.style.setProperty('--border-color', color + '40');
+  document.documentElement.style.setProperty('--box-shadow', `0 4px 6px ${color}20`);
+  
+  // Add CSS for all buttons and mode display
+  const style = document.createElement('style');
+  style.textContent = `
+    :root {
+      --button-hover-bg: ${color}20;
+      --button-border: ${color};
+    }
+    button {
+      border-color: var(--button-border) !important;
+    }
+    button:hover {
+      background-color: var(--button-hover-bg) !important;
+      border-color: var(--button-border) !important;
+    }
+    #mode-display {
+      color: var(--primary-color) !important;
+    }
+    .timer-controls button {
+      border-color: var(--button-border) !important;
+    }
+    .timer-controls button:hover {
+      background-color: var(--button-hover-bg) !important;
+    }
+    #add-task, .settings-button, .focus-btn {
+      border-color: var(--button-border) !important;
+    }
+    #add-task:hover, .settings-button:hover, .focus-btn:hover {
+      background-color: var(--button-hover-bg) !important;
+    }
+  `;
+  
+  // Remove any existing style we added
+  const existingStyle = document.getElementById('accent-color-style');
+  if (existingStyle) {
+    existingStyle.remove();
+  }
+  
+  style.id = 'accent-color-style';
+  document.head.appendChild(style);
+}
+
 function updateAccentColor() {
   const colorInput = qs('accent-color');
   const newColor = colorInput.value;
   
-  document.documentElement.style.setProperty('--primary-color', newColor);
-  document.documentElement.style.setProperty('--hover-color', newColor + '20');
-  document.documentElement.style.setProperty('--border-color', newColor + '40');
-  document.documentElement.style.setProperty('--box-shadow', `0 4px 6px ${newColor}20`);
-  
+  applyAccentColor(newColor);
   saveSettings();
 }
 
@@ -1358,45 +1435,128 @@ function updateReminderTime() {
 
 async function loadSettings() {
   try {
+    // Try to load from API first
     const settings = await api.settings.getUserSettings();
+    console.log('Received settings from API:', settings);
     
-    if (settings.appearance) {
-      const accentColor = settings.appearance.accentColor || '#ff6b6b';
-      const fontSize = settings.appearance.fontSize || 'medium';
+    if (settings) {
+      // Apply appearance settings
+      const accentColorInput = qs('accent-color');
+      if (settings.accentColor && accentColorInput) {
+        accentColorInput.value = settings.accentColor;
+        document.documentElement.style.setProperty('--primary-color', settings.accentColor);
+        document.documentElement.style.setProperty('--hover-color', settings.accentColor + '20');
+        document.documentElement.style.setProperty('--border-color', settings.accentColor + '40');
+        document.documentElement.style.setProperty('--box-shadow', `0 4px 6px ${settings.accentColor}20`);
+      }
       
-      qs('accent-color').value = accentColor;
-      qs('font-size').value = fontSize;
+      // Apply theme
+      if (settings.theme) {
+        document.documentElement.setAttribute('data-theme', settings.theme);
+        const themeIcons = document.querySelectorAll('.theme-icon');
+        themeIcons.forEach(icon => {
+          if (icon) {
+            icon.textContent = settings.theme === 'dark' ? '☀️' : '🌙';
+          }
+        });
+      }
       
-      document.documentElement.style.setProperty('--font-size', 
-        fontSize === 'small' ? '14px' : fontSize === 'large' ? '18px' : '16px');
+      const fontSizeInput = qs('font-size');
+      if (settings.fontSize && fontSizeInput) {
+        // Convert numeric fontSize to string value
+        let fontSizeValue = 'medium';
+        if (typeof settings.fontSize === 'number') {
+          fontSizeValue = settings.fontSize <= 14 ? 'small' : settings.fontSize >= 18 ? 'large' : 'medium';
+        } else {
+          fontSizeValue = settings.fontSize;
+        }
+        
+        fontSizeInput.value = fontSizeValue;
+        const fontSize = fontSizeValue === 'small' ? '14px' : fontSizeValue === 'large' ? '18px' : '16px';
+        document.documentElement.style.setProperty('--font-size', fontSize);
+        document.body.style.fontSize = fontSize;
+      }
+      
+      // Apply notification settings
+      const notificationsInput = qs('email-notifications');
+      if (settings.enableNotifications !== undefined && notificationsInput) {
+        notificationsInput.checked = settings.enableNotifications;
+      }
+      
+      // Apply timer settings
+      const workInput = qs('work-input');
+      const shortBreakInput = qs('short-break-input');
+      const longBreakInput = qs('long-break-input');
+      
+      if (settings.workDuration && workInput) {
+        workInput.value = settings.workDuration;
+      }
+      if (settings.shortBreakDuration && shortBreakInput) {
+        shortBreakInput.value = settings.shortBreakDuration;
+      }
+      if (settings.longBreakDuration && longBreakInput) {
+        longBreakInput.value = settings.longBreakDuration;
+      }
     }
     
-    if (settings.notifications) {
-      qs('email-notifications').checked = settings.notifications.enabled !== false;
-      qs('reminder-time').value = settings.notifications.reminderTime || '09:00';
-    }
+    return settings;
   } catch (error) {
-    console.error('Failed to load settings:', error);
+    console.error('Failed to load settings from server:', error);
+    // Load from localStorage as fallback
+    const savedSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+    
+    // Apply the same settings as above but from localStorage
+    if (savedSettings.accentColor) {
+      const accentColorInput = qs('accent-color');
+      if (accentColorInput) {
+        accentColorInput.value = savedSettings.accentColor;
+        document.documentElement.style.setProperty('--primary-color', savedSettings.accentColor);
+        document.documentElement.style.setProperty('--hover-color', savedSettings.accentColor + '20');
+        document.documentElement.style.setProperty('--border-color', savedSettings.accentColor + '40');
+        document.documentElement.style.setProperty('--box-shadow', `0 4px 6px ${savedSettings.accentColor}20`);
+      }
+    }
+    
+    if (savedSettings.theme) {
+      document.documentElement.setAttribute('data-theme', savedSettings.theme);
+      const themeIcons = document.querySelectorAll('.theme-icon');
+      themeIcons.forEach(icon => {
+        if (icon) {
+          icon.textContent = savedSettings.theme === 'dark' ? '☀️' : '🌙';
+        }
+      });
+    }
+    
+    return savedSettings;
   }
 }
 
 async function saveSettings() {
+  const fontSizeValue = qs('font-size').value;
+  // Convert string fontSize to number
+  const fontSizeNumber = fontSizeValue === 'small' ? 14 : fontSizeValue === 'large' ? 18 : 16;
+
   const settings = {
-    appearance: {
-      accentColor: qs('accent-color').value,
-      fontSize: qs('font-size').value
-    },
-    notifications: {
-      enabled: qs('email-notifications').checked,
-      reminderTime: qs('reminder-time').value
-    }
+    accentColor: qs('accent-color').value,
+    fontSize: fontSizeNumber,
+    enableNotifications: qs('email-notifications').checked,
+    enableSound: true, // Default to true since we have sound controls
+    workDuration: parseInt(qs('work-input')?.value || '25'),
+    shortBreakDuration: parseInt(qs('short-break-input')?.value || '5'),
+    longBreakDuration: parseInt(qs('long-break-input')?.value || '15'),
+    longBreakInterval: 4, // Default to 4 pomodoros before long break
+    theme: document.documentElement.getAttribute('data-theme') || 'light'
   };
   
+  // Store in localStorage as a fallback
+  localStorage.setItem('userSettings', JSON.stringify(settings));
+  
   try {
+    console.log('Saving settings to server:', settings);
     await api.settings.updateUserSettings(settings);
   } catch (error) {
-    console.error('Failed to save settings:', error);
-    alert('Failed to save settings. Please try again.');
+    console.error('Failed to save settings to server:', error);
+    // Don't show alert since we saved to localStorage
   }
 }
 
@@ -1705,21 +1865,15 @@ function initFocusModeFunctionality()
       btn.classList.add('loading');
       btn.disabled = true;
 
-      const tryPlaySound = (extension) => 
-        {
-        return new Promise((resolve, reject) => 
-          {
-          try 
-          {
-            const soundPath = `sounds/${sound}.${extension}`;
+      const tryPlaySound = () => {
+        return new Promise((resolve, reject) => {
+          try {
+            const soundPath = `sounds/${sound}.wav`;
             currentSound = new Audio(soundPath);
             
-            currentSound.addEventListener('canplaythrough', () => 
-              {
-              currentSound.addEventListener('timeupdate', () => 
-              {
-               if (currentSound.currentTime > currentSound.duration - 0.1) 
-                {
+            currentSound.addEventListener('canplaythrough', () => {
+              currentSound.addEventListener('timeupdate', () => {
+                if (currentSound.currentTime > currentSound.duration - 0.1) {
                   currentSound.currentTime = 0;
                 }
               });
@@ -1754,10 +1908,9 @@ function initFocusModeFunctionality()
         });
       };
 
-      tryPlaySound('mp3')
-        .catch(() => tryPlaySound('wav'))
+      tryPlaySound()
         .catch(e => {
-          console.error('All sound formats failed:', e);
+          console.error('Sound loading failed:', e);
           btn.classList.remove('loading');
           btn.disabled = false;
           

@@ -1,4 +1,4 @@
-import { initPomodoro, initTodo, initStats, initAbout } from './script.js';
+import { initPomodoro, initTodo, initStats, initAbout, initFocusMode } from './script.js';
 
 const root = document.getElementById('root');
 const tabs = document.querySelectorAll('.tab-btn');
@@ -19,6 +19,9 @@ function loadPanel(name) {
         break;
       case 'about':
         initAbout();
+        break;
+      case 'focus':
+        initFocusMode();
         break;
       default:
         throw new Error(`Unknown panel: ${name}`);
